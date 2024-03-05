@@ -18,3 +18,10 @@ Build project
 ```sh
 npm run build
 ```
+
+## Reference
+- [TypeScript](https://www.typescriptlang.org/docs/)
+- [Express](https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/Introduction)
+- [Express Morgan](https://github.com/expressjs/morgan)
+- [Axios](https://axios-http.com/docs/intro)
+- [Nodemon](https://nodemon.io/)
