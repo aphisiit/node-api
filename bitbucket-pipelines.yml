@@ -87,18 +87,17 @@ pipelines:
         artifacts:
           - "trivy-results-critical.html"
 
-    # - step:
-    #     name: Deployment
-    #     services:
-    #       - docker
-    #     runs-on:
-    #       - self.hosted
-    #       - linux
-    #     script:
-    #       - echo 'Hello world.'
-    #       - pipe: atlassian/jira-transition:0.5.0
-    #         variables:
-    #           JIRA_BASE_URL: ${JIRA_BASE_URL}
-    #           JIRA_USER_EMAIL: ${JIRA_USER_EMAIL}
-    #           JIRA_API_TOKEN: ${JIRA_API_TOKEN}
-    #           TRANSITION: 'Ready To Test'
+    - step:
+        name: Jira Transition
+        services:
+          - docker
+        runs-on:
+          - self.hosted
+          - linux
+        script:
+          - pipe: atlassian/jira-transition:0.5.0
+            variables:
+              JIRA_BASE_URL: ${JIRA_BASE_URL}
+              JIRA_USER_EMAIL: ${JIRA_USER_EMAIL}
+              JIRA_API_TOKEN: ${JIRA_API_TOKEN}
+              TRANSITION: 'Ready To Test'
