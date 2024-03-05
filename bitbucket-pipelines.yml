@@ -100,4 +100,5 @@ pipelines:
               JIRA_BASE_URL: ${JIRA_BASE_URL}
               JIRA_USER_EMAIL: ${JIRA_USER_EMAIL}
               JIRA_API_TOKEN: ${JIRA_API_TOKEN}
+              ISSUE: $BITBUCKET_BRANCH
               TRANSITION: 'Ready To Test'
