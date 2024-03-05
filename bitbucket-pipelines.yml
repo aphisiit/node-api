@@ -1,0 +1,104 @@
+#  Template Java Gradle build
+
+#  This template allows you to test and build your Java project with Gradle.
+#  The workflow allows running tests, code checkstyle and security scans on the default branch.
+
+# Prerequisites: appropriate project structure should exist in the repository.
+
+image: node:20.11.1
+
+pipelines:
+  default:
+    - parallel:
+      - step:
+          name: Build and Test
+          script:
+            - npm install -g prettier
+            - npm install
+            - npm run build
+          after-script:
+            - pipe: atlassian/checkstyle-report:0.3.0
+      - step:
+          name: Security Scan
+          script:
+            # Run a security scan for sensitive data.
+            # See more security tools at https://bitbucket.org/product/features/pipelines/integrations?&category=security
+            - pipe: atlassian/git-secrets-scan:0.5.1
+      - step:
+          name: Build Image
+          script:
+            - IMAGE_NAME=$BITBUCKET_REPO_SLUG
+            - docker build . --file Dockerfile --tag ${IMAGE_NAME}:latest
+            - docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} swr.ap-southeast-2.myhuaweicloud.com
+            - docker tag ${IMAGE_NAME}:latest swr.ap-southeast-2.myhuaweicloud.com/protoss-technology/${IMAGE_NAME}:latest
+            - docker push swr.ap-southeast-2.myhuaweicloud.com/protoss-technology/${IMAGE_NAME}:latest
+            - docker logout
+          services:
+            - docker
+          caches:
+            - docker
+          artifacts:
+            - "*.tar"
+    - step:
+        name: Scan Image for high variability
+        services:
+          - docker
+        runs-on:
+          - self.hosted
+          - linux
+        script:
+          # - docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} swr.ap-southeast-2.myhuaweicloud.com
+          # - docker pull swr.ap-southeast-2.myhuaweicloud.com/protoss-technology/${BITBUCKET_REPO_SLUG}:latest
+          - pipe: aquasecurity/trivy-pipe:1.0.0
+            variables:
+              scanType: image
+              imageRef: 'swr.ap-southeast-2.myhuaweicloud.com/protoss-technology/$BITBUCKET_REPO_SLUG:latest'
+              format: 'template'
+              template: '@/contrib/html.tpl'
+              output: 'trivy-results-high.html'
+              vulnType: 'os,library'
+              exitCode: '0'
+              severity: 'HIGH'
+              TRIVY_USERNAME: ${DOCKER_USER}
+              TRIVY_PASSWORD: ${DOCKER_PASSWORD}  
+        artifacts:
+          - "trivy-results-high.html"
+
+    - step:
+        name: Scan Image for critical variability
+        services:
+          - docker
+        runs-on:
+          - self.hosted
+          - linux
+        script:
+          - pipe: aquasecurity/trivy-pipe:1.0.0
+            variables:
+              scanType: image
+              imageRef: 'swr.ap-southeast-2.myhuaweicloud.com/protoss-technology/$BITBUCKET_REPO_SLUG:latest'
+              format: 'template'
+              template: '@/contrib/html.tpl'
+              output: 'trivy-results-critical.html'
+              vulnType: 'os,library'
+              exitCode: '0'
+              severity: 'CRITICAL'
+              TRIVY_USERNAME: ${DOCKER_USER}
+              TRIVY_PASSWORD: ${DOCKER_PASSWORD}
+        artifacts:
+          - "trivy-results-critical.html"
+
+    # - step:
+    #     name: Deployment
+    #     services:
+    #       - docker
+    #     runs-on:
+    #       - self.hosted
+    #       - linux
+    #     script:
+    #       - echo 'Hello world.'
+    #       - pipe: atlassian/jira-transition:0.5.0
+    #         variables:
+    #           JIRA_BASE_URL: ${JIRA_BASE_URL}
+    #           JIRA_USER_EMAIL: ${JIRA_USER_EMAIL}
+    #           JIRA_API_TOKEN: ${JIRA_API_TOKEN}
+    #           TRANSITION: 'Ready To Test'
