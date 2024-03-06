@@ -7,6 +7,9 @@
 
 image: node:20.11.1
 
+clone:
+  depth: full    # SonarCloud scanner needs the full history to assign issues properly
+
 pipelines:
   default:
     - parallel:
@@ -16,6 +19,8 @@ pipelines:
             - npm install -g prettier
             - npm install
             - npm run build
+            - pipe: sonarsource/sonarcloud-scan:2.0.0
+            - pipe: sonarsource/sonarcloud-quality-gate:0.1.6
           after-script:
             - pipe: atlassian/checkstyle-report:0.3.0
       - step:
