@@ -7,13 +7,14 @@
 
 image: node:20.11.1
 
+clone:
+  depth: full    # SonarCloud scanner needs the full history to assign issues properly
+
 pipelines:
   default:
     - parallel:
       - step:
           name: Build and Test
-          clone:
-            depth: full    # SonarCloud scanner needs the full history to assign issues properly
           script:
             - npm install -g prettier
             - npm install
