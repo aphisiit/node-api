@@ -16,9 +16,10 @@ pipelines:
       - step:
           name: Build and Test
           script:
-            - npm install -g prettier
+            - npm install -g prettier tslint
             - npm install
             - npm run build
+            - tslint --project tsconfig.json -t checkstyle
             - pipe: sonarsource/sonarcloud-scan:2.0.0
             - pipe: sonarsource/sonarcloud-quality-gate:0.1.6
           after-script:
