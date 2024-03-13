@@ -9,30 +9,41 @@ image: node:20.11.1
 
 pipelines:
   default:
-    - parallel:
-      - step:
-          name: Build and Test
-          script:
-            - npm install -g prettier tslint
-            - npm install
-            - npm run build
-            - tslint --project tsconfig.json -t checkstyle
-          after-script:
-            - pipe: atlassian/checkstyle-report:0.3.0
-      - step:
-          name: Security Scan
-          script:
-            # Run a security scan for sensitive data.
-            # See more security tools at https://bitbucket.org/product/features/pipelines/integrations?&category=security
-            - pipe: atlassian/git-secrets-scan:0.5.1
-      - step:
-          name: Build Image
-          script:
-            - IMAGE_NAME=$BITBUCKET_REPO_SLUG
-            - docker build . --file Dockerfile --tag ${IMAGE_NAME}:latest
-          services:
-            - docker
-          caches:
-            - docker
-          artifacts:
-            - "*.tar"
+    - step:
+        name: Build and Test
+        runs-on:
+          - self.hosted
+          - linux
+        script:
+          - echo "Hello Build and Test"
+          - npm install -g prettier tslint
+          - npm install
+          - npm run build
+          - tslint --project tsconfig.json -t checkstyle
+        after-script:
+          - pipe: atlassian/checkstyle-report:0.3.0
+    - step:
+        name: Security Scan
+        runs-on:
+          - self.hosted
+          - linux
+        script:
+          - echo "Hello Security Scan"
+          # Run a security scan for sensitive data.
+          # See more security tools at https://bitbucket.org/product/features/pipelines/integrations?&category=security
+          - pipe: atlassian/git-secrets-scan:0.5.1
+    - step:
+        name: Build Image
+        runs-on:
+          - self.hosted
+          - linux
+        script:
+          - echo "Hello Build Image"
+          - IMAGE_NAME=$BITBUCKET_REPO_SLUG
+          - docker build . --file Dockerfile --tag ${IMAGE_NAME}:latest
+        services:
+          - docker
+        caches:
+          - docker
+        artifacts:
+          - "*.tar"
