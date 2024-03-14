@@ -48,7 +48,7 @@ pipelines:
         artifacts:
           - "*.tar"
   branches:
-    master:
+    main:
     - step:
         name: Build staging
         deployment: Staging
