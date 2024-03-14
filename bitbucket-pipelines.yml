@@ -47,3 +47,34 @@ pipelines:
           - docker
         artifacts:
           - "*.tar"
+  branches:
+    master:
+    - step:
+        name: Build staging
+        deployment: Staging
+        runs-on:
+          - self.hosted
+          - linux
+        script:
+          - echo "Hello Build and Test"
+          - npm install -g prettier tslint
+          - npm install
+          - npm run build
+          - tslint --project tsconfig.json -t checkstyle
+        after-script:
+          - pipe: atlassian/checkstyle-report:0.3.0
+    - step:
+        name: Build production
+        deployment: Production
+        trigger: manual
+        runs-on:
+          - self.hosted
+          - linux
+        script:
+          - echo "Hello Build and Test"
+          - npm install -g prettier tslint
+          - npm install
+          - npm run build
+          - tslint --project tsconfig.json -t checkstyle
+        after-script:
+          - pipe: atlassian/checkstyle-report:0.3.0
