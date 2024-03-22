@@ -4,12 +4,14 @@ on: [push]
 
 jobs:
   build:
+    name: Build package wiht npm
     strategy:
       matrix:
         node-version: ['20.x']
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out the repository
+        uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -20,3 +22,19 @@ jobs:
         run: npm install
       - name: Build project
         run: npm run build
+  
+  contaierized:
+    name: Build docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+      - name: Build docker image
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: node-api
+          labels: latest
+    
